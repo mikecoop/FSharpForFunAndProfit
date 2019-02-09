@@ -13,6 +13,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <Name>Examples</Name>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,6 +27,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -50,6 +54,17 @@
     <None Include="App.config" />
     <Content Include="packages.config" />
     <None Include="WhyUseFSharp\Scratchpad.fsx" />
+    <None Include="WhyUseFSharp\Functions.fsx" />
+    <None Include="WhyUseFSharp\MiniLanguages.fsx" />
+    <None Include="WhyUseFSharp\PatternMatching.fsx" />
+    <None Include="WhyUseFSharp\Types.fsx" />
+    <None Include="WhyUseFSharp\FunctionsAsInterfaces.fsx" />
+    <None Include="WhyUseFSharp\PartialApplication.fsx" />
+    <None Include="WhyUseFSharp\ActivePatterns.fsx" />
+    <None Include="WhyUseFSharp\ExhaustivePatternMatching.fsx" />
+    <None Include="WhyUseFSharp\TypeChecking.fsx" />
+    <None Include="WhyUseFSharp\DesigningForCorrectness.fsx" />
+    <None Include="WhyUseFSharp\AsynchronousProgramming.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
