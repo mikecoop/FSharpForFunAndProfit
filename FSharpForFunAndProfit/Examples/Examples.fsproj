@@ -65,6 +65,10 @@
     <None Include="WhyUseFSharp\TypeChecking.fsx" />
     <None Include="WhyUseFSharp\DesigningForCorrectness.fsx" />
     <None Include="WhyUseFSharp\AsynchronousProgramming.fsx" />
+    <None Include="WhyUseFSharp\MessagesAndAgents.fsx" />
+    <None Include="WhyUseFSharp\FunctionalReactiveProgramming.fsx" />
+    <None Include="WhyUseFSharp\DotNetInterop.fsx" />
+    <None Include="WhyUseFSharp\AnythingCSharpCanDo.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
