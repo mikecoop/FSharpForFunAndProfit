@@ -163,3 +163,14 @@ run parseAOrB "BZZ"
 run parseAOrB "CZZ"
 
 // Combining andThen and orElse
+let parseA1 = pchar5 'A'
+let parseB1 = pchar5 'B'
+let parseC1 = pchar5 'C'
+
+let bOrElseC = parseB1 <|> parseC1
+let aAndThenBorC = parseA1 .>>. bOrElseC
+
+run aAndThenBorC "ABZ"
+run aAndThenBorC "ACZ"
+run aAndThenBorC "QBZ"
+run aAndThenBorC "AQZ"

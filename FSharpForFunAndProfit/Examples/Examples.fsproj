@@ -69,7 +69,11 @@
     <None Include="WhyUseFSharp\FunctionalReactiveProgramming.fsx" />
     <None Include="WhyUseFSharp\DotNetInterop.fsx" />
     <None Include="WhyUseFSharp\AnythingCSharpCanDo.fsx" />
-    <None Include="ParserCombinators\BasicParser.fsx" />
+    <None Include="ParserCombinators\Scratchpad1.fsx" />
+    <None Include="ParserCombinators\BasicParsers.fsx" />
+    <None Include="ParserCombinators\Scratchpad2.fsx" />
+    <None Include="ParserCombinators\ParserLibrary.fsx" />
+    <None Include="ParserCombinators\Scratchpad3.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
