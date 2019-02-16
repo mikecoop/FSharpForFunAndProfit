@@ -120,9 +120,10 @@ let satisfy predicate label =
     // return the "wrapped" inner function
     { parseFn = innerFn; label = label }
 
+/// parse a char
 let pchar charToMatch =
-    let predicate ch = (ch = charToMatch)
     let label = sprintf "%c" charToMatch
+    let predicate ch = (ch = charToMatch)
     satisfy predicate label
 
 let runOnInput parser input =
@@ -223,11 +224,12 @@ let ( <|> ) = orElse
 let choice listOfParsers =
     List.reduce ( <|> ) listOfParsers
 
-/// Choose any of a list of characters
 let anyOf listOfChars =
+    let label = sprintf "anyOf %A" listOfChars
     listOfChars
-    |> List.map pchar // convert into parsers
+    |> List.map pchar
     |> choice
+    <?> label
 
 /// Convert a list of Parsers into a Parser of a list
 let rec sequence parserList =
@@ -315,11 +317,6 @@ let digitChar =
     let label = "digit"
     satisfy predicate label
 
-let whitespaceChar =
-    let predicate = Char.IsWhiteSpace
-    let label = "whitespace"
-    satisfy predicate label
-
 let rec readAllChars input =
     [ let reaminingInput, charOpt = nextChar input
       match charOpt with
@@ -329,9 +326,67 @@ let rec readAllChars input =
             yield ch
             yield! readAllChars reaminingInput ]
 
-let parseAB =
-    pchar 'A' .>>. pchar 'B'
-    <?> "AB"
+let charListToStr charList =
+    String(List.toArray charList)
 
-run parseAB "A|C"
-|> printResult
+let manyChars cp =
+    many cp
+    |>> charListToStr
+
+let manyChars1 cp =
+    many1 cp
+    |>> charListToStr
+
+let pstring str =
+    let label = str
+
+    str
+    |> List.ofSeq
+    |> List.map pchar
+    |> sequence
+    |> mapP charListToStr
+    <?> label
+
+let whitespaceChar =
+    let predicate = Char.IsWhiteSpace
+    let label = "whitespace"
+    satisfy predicate label
+
+let spaces = many whitespaceChar
+
+let spaces1 = many1 whitespaceChar
+
+let digitChar =
+    let predicate = Char.IsDigit
+    let label = "digit"
+    satisfy predicate label
+
+let pint =
+    let label = "integer"
+
+    let resultToInt (sign, digits) =
+        let i = digits |> int
+        match sign with
+        | Some ch -> -i
+        | None -> i
+
+    let digits = manyChars1 digitChar
+
+    opt (pchar '-') .>>. digits
+    |> mapP resultToInt
+    <?> label
+
+let pfloat =
+    let label = "float"
+
+    let resultToFloat (((sign, digits1), point), digits2) =
+        let fl = sprintf "%s.%s" digits1 digits2 |> float
+        match sign with
+        | Some ch -> -fl
+        | None -> fl
+
+    let digits = manyChars1 digitChar
+
+    opt (pchar '-') .>>. digits .>>. pchar '.' .>>. digits
+    |> mapP resultToFloat
+    <?> label
