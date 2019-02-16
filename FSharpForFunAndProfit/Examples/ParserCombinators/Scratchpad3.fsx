@@ -1,63 +1,165 @@
 ﻿open System
 
+type ParserLabel = string
+type ParserError = string
+
+type Position =
+    { line: int
+      column: int }
+
+type InputState =
+    { lines: string[]
+      position: Position }
+
+type ParserPosition =
+    { currentLine: string
+      line: int
+      column: int }
+
 /// Type that represents Success/Failure in parsing
 type Result<'a> =
     | Success of 'a
-    | Failure of string
+    | Failure of ParserLabel * ParserError * ParserPosition
+
+type Input = InputState
 
 /// Type that wraps a parsing function
-type Parser<'T> = Parser of (string -> Result<'T * string>)
+type Parser<'a> = {
+    parseFn: (Input -> Result<'a * Input>)
+    label: ParserLabel }
+
+let initialPos = { line = 0; column = 0 }
+
+let incrCol (pos:Position) =
+    { pos with column = pos.column + 1 }
+
+let incrLine (pos:Position) =
+    { pos with line = pos.line + 1 }
+
+let fromStr str =
+    if String.IsNullOrEmpty(str) then
+        { lines = [||]; position = initialPos }
+    else
+        let separators = [| "\r\n"; "\n" |]
+        let lines = str.Split(separators, StringSplitOptions.None)
+        { lines = lines; position = initialPos }
+
+let currentLine inputState =
+    let linePos = inputState.position.line
+    if linePos < inputState.lines.Length then
+        inputState.lines.[linePos]
+    else
+        "end of file"
+
+let parserPositionFromInputState (inputState:InputState) =
+    { currentLine = currentLine inputState
+      line = inputState.position.line
+      column = inputState.position.column }
+
+let nextChar input =
+    let linePos = input.position.line
+    let colPos = input.position.column
+
+    if linePos >= input.lines.Length then
+        (input, None)
+    else
+        let currentLine = currentLine input
+        if colPos < currentLine.Length then
+            let char = currentLine.[colPos]
+            let newPos = incrCol input.position
+            let newState = { input with position = newPos }
+            (newState, Some char)
+        else
+            let char = '\n'
+            let newPos = incrLine input.position
+            let newState = { input with position = newPos }
+            (newState, Some char)
+
+let printResult result =
+    match result with
+    | Success (value, input) ->
+        printfn "%A" value
+    | Failure (label, error, parserPos) ->
+        let errorLine = parserPos.currentLine
+        let colPos = parserPos.column
+        let linePos = parserPos.line
+        let failureCaret = sprintf "%*s^%s" colPos "" error
+        printfn "Line:%i Col:%i Error parsing %s\n%s\n%s" linePos colPos label errorLine failureCaret
+
+let getLabel parser =
+    parser.label
+
+let setLabel parser newLabel =
+    let newInnerFn input =
+        let result = parser.parseFn input
+        match result with
+        | Success s ->
+            Success s
+        | Failure (oldLabel, err, pos) ->
+            Failure (newLabel, err, pos)
+    { parseFn = newInnerFn; label = newLabel }
+
+let ( <?> ) = setLabel
 
 /// Parse a single character
-let pchar charToMatch =
-    // define a nested inner function
-    let innerFn str =
-        if String.IsNullOrEmpty(str) then
-            Failure "No more input"
-        else
-            let first = str.[0]
-            if first = charToMatch then
-                let remaining = str.[1..]
-                Success (charToMatch,remaining)
+let satisfy predicate label =
+    let innerFn input =
+        let remainingInput, charOpt = nextChar input
+        match charOpt with
+        | None ->
+            let err = "No more input"
+            let pos = parserPositionFromInputState input
+            Failure (label, err, pos)
+        | Some first ->
+            if predicate first then
+                Success (first, remainingInput)
             else
-                let msg = sprintf "Expecting '%c'. Got '%c'" charToMatch first
-                Failure msg
+                let err = sprintf "Unexpected '%c'" first
+                let pos = parserPositionFromInputState input
+                Failure (label, err, pos)
     // return the "wrapped" inner function
-    Parser innerFn
+    { parseFn = innerFn; label = label }
+
+let pchar charToMatch =
+    let predicate ch = (ch = charToMatch)
+    let label = sprintf "%c" charToMatch
+    satisfy predicate label
+
+let runOnInput parser input =
+    parser.parseFn input
 
 /// Run a parser with some input
-let run parser input =
-    // unwrap parser to get inner function
-    let (Parser innerFn) = parser
-    // call inner function with input
-    innerFn input
+let run parser inputStr =
+    runOnInput parser (fromStr inputStr)
 
 /// "bindP" takes a parser-producing function f, and a parser p
 /// and passes the output of p into f, to create a new parser
 let bindP f p =
+    let label = "unknown"
     let innerFn input =
-        let result1 = run p input
+        let result1 = runOnInput p input
         match result1 with
-        | Failure err ->
+        | Failure (label, err, pos) ->
             // return error from parser1
-            Failure err
-        | Success (value1,remainingInput) ->
+            Failure (label, err, pos)
+        | Success (value1, remainingInput) ->
             // apply f to get a new parser
             let p2 = f value1
             // run parser with remaining input
-            run p2 remainingInput
-    Parser innerFn
+            runOnInput p2 remainingInput
+    { parseFn = innerFn; label = label }
 
 /// Infix version of bindP
 let ( >>= ) p f = bindP f p
 
 /// Lift a value to a Parser
 let returnP x =
+    let label = "unknown"
     let innerFn input =
         // ignore the input and return x
-        Success (x,input)
+        Success (x, input)
     // return the inner function
-    Parser innerFn
+    { parseFn = innerFn; label = label }
 
 /// apply a function to the value inside a parser
 let mapP f =
@@ -86,16 +188,17 @@ let lift2 f xP yP =
 let andThen p1 p2 =
     p1 >>= (fun p1Result ->
     p2 >>= (fun p2Result ->
-        returnP (p1Result,p2Result) ))
+        returnP (p1Result, p2Result) ) )
 
 /// Infix version of andThen
 let ( .>>. ) = andThen
 
 /// Combine two parsers as "A orElse B"
 let orElse p1 p2 =
+    let label = sprintf "%s orElse %s" (getLabel p1) (getLabel p2)
     let innerFn input =
         // run parser1 with the input
-        let result1 = run p1 input
+        let result1 = runOnInput p1 input
 
         // test the result for Failure/Success
         match result1 with
@@ -103,15 +206,15 @@ let orElse p1 p2 =
             // if success, return the original result
             result1
 
-        | Failure err ->
+        | Failure (label, err, pos) ->
             // if failed, run parser2 with the input
-            let result2 = run p2 input
+            let result2 = runOnInput p2 input
 
             // return parser2's result
             result2
 
     // return the inner function
-    Parser innerFn
+    { parseFn = innerFn; label = label }
 
 /// Infix version of orElse
 let ( <|> ) = orElse
@@ -138,16 +241,16 @@ let rec sequence parserList =
     match parserList with
     | [] ->
         returnP []
-    | head::tail ->
+    | head :: tail ->
         consP head (sequence tail)
 
 /// (helper) match zero or more occurences of the specified parser
 let rec parseZeroOrMore parser input =
     // run parser with the input
-    let firstResult = run parser input
+    let firstResult = runOnInput parser input
     // test the result for Failure/Success
     match firstResult with
-    | Failure err ->
+    | Failure (label, err, pos) ->
         // if parse fails, return empty list
         ([],input)
     | Success (firstValue,inputAfterFirstParse) ->
@@ -160,11 +263,12 @@ let rec parseZeroOrMore parser input =
 
 /// matches zero or more occurences of the specified parser
 let many parser =
+    let label = sprintf "many %s" (getLabel parser)
     let rec innerFn input =
         // parse the input -- wrap in Success as it always succeeds
         Success (parseZeroOrMore parser input)
 
-    Parser innerFn
+    { parseFn = innerFn; label = label }
 
 /// matches one or more occurences of the specified parser
 let many1 p =
@@ -205,3 +309,29 @@ let sepBy1 p sep =
 /// Parses zero or more occurrences of p separated by sep
 let sepBy p sep =
     sepBy1 p sep <|> returnP []
+
+let digitChar =
+    let predicate = Char.IsDigit
+    let label = "digit"
+    satisfy predicate label
+
+let whitespaceChar =
+    let predicate = Char.IsWhiteSpace
+    let label = "whitespace"
+    satisfy predicate label
+
+let rec readAllChars input =
+    [ let reaminingInput, charOpt = nextChar input
+      match charOpt with
+      | None ->
+            ()
+      | Some ch ->
+            yield ch
+            yield! readAllChars reaminingInput ]
+
+let parseAB =
+    pchar 'A' .>>. pchar 'B'
+    <?> "AB"
+
+run parseAB "A|C"
+|> printResult
