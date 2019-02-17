@@ -8,8 +8,8 @@ type JValue =
     | JNumber of float
     | JBool of bool
     | JNull
-    | Jobject of Map<string, JValue>
-    | Jarray of JValue list
+    | JObject of Map<string, JValue>
+    | JArray of JValue list
 
 let (>>%) p x =
     p |>> (fun _ -> x)
@@ -129,3 +129,56 @@ let jNumber =
     <?> "number"
 
 let jNumber_ = jNumber .>> spaces1
+
+let createParserForwardedToRef<'a>() =
+    
+    let dummyParser =
+        let innerFn input : Result<'a * Input> = failwith "unfixed forwarded parser"
+        { parseFn = innerFn; label = "unknown" }
+
+    let parserRef = ref dummyParser
+
+    let innerFn input =
+        runOnInput !parserRef input
+    let wrapperParser = { parseFn = innerFn; label = "unkonwn" }
+
+    wrapperParser, parserRef
+
+let jValue, jValueRef = createParserForwardedToRef<JValue>()
+
+let jArray =
+    let left = pchar '[' .>> spaces
+    let right = pchar ']' .>> spaces
+    let comma = pchar ',' .>> spaces
+    let value = jValue .>> spaces
+
+    let values = sepBy1 value comma
+
+    between left values right
+    |>> JArray
+    <?> "array"
+
+let jObject =
+    
+    let left = pchar '{' .>> spaces
+    let right = pchar '}' .>> spaces
+    let colon = pchar ':' .>> spaces
+    let comma = pchar ',' .>> spaces
+    let key = quotedString .>> spaces
+    let value = jValue .>> spaces
+
+    let keyValue = (key .>> colon) .>>. value
+    let keyValues = sepBy1 keyValue comma
+
+    between left keyValues right
+    |>> Map.ofList
+    |>> JObject
+    <?> "object"
+
+jValueRef := choice
+    [ jNull
+      jBool
+      jNumber
+      jString
+      jArray
+      jObject ]
