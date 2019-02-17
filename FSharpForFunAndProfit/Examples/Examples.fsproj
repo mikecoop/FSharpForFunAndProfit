@@ -75,6 +75,7 @@
     <None Include="ParserCombinators\BasicParserLibrary.fsx" />
     <None Include="ParserCombinators\Scratchpad3.fsx" />
     <None Include="ParserCombinators\ParserLibrary.fsx" />
+    <None Include="ParserCombinators\Scratchpad4.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

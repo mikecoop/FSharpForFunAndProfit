@@ -312,11 +312,6 @@ let sepBy1 p sep =
 let sepBy p sep =
     sepBy1 p sep <|> returnP []
 
-let digitChar =
-    let predicate = Char.IsDigit
-    let label = "digit"
-    satisfy predicate label
-
 let rec readAllChars input =
     [ let reaminingInput, charOpt = nextChar input
       match charOpt with
