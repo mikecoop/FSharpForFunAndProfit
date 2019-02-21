@@ -76,6 +76,7 @@
     <None Include="ParserCombinators\Scratchpad3.fsx" />
     <None Include="ParserCombinators\ParserLibrary.fsx" />
     <None Include="ParserCombinators\JsonParser.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes1.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
