@@ -1,5 +1,4 @@
-﻿open System.Security.Cryptography
-
+﻿
 type Book = { title: string; price: decimal; }
 
 type ChocolateType = Dark | Milk | SeventyPercent
