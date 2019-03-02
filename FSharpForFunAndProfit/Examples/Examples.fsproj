@@ -79,6 +79,8 @@
     <None Include="RecursiveTypes\RecursiveTypes1.fsx" />
     <None Include="RecursiveTypes\RecursiveTypes2.fsx" />
     <None Include="RecursiveTypes\RecursiveTypes3.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes4.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes5.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
