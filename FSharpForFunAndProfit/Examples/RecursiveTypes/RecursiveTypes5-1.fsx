@@ -1,4 +1,5 @@
-﻿
+﻿open System.Windows.Forms
+
 type LinkedList<'a> =
     | Empty
     | Cons of head:'a * tail:LinkedList<'a>
