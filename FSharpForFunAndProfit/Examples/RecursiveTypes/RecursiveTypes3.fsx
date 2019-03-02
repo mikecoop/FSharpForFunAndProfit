@@ -102,7 +102,6 @@ let rec foldGift fBook fChocolate fWrapped fBox fCard acc gift : 'r =
         recurse newAcc innerGift
 
 let totalCostUsingFold gift =
-    
     let fBook costSoFar (book:Book) =
         costSoFar + book.price
     let fChocolate costSoFar (choc:Chocolate) =
@@ -120,3 +119,90 @@ let totalCostUsingFold gift =
 
 deeplyNestedBox 10000 |> totalCostUsingFold
 deeplyNestedBox 100000 |> totalCostUsingFold
+
+let descriptionUsingFold gift =
+    let fBook descriptionSoFar (book:Book) =
+        sprintf "'%s' %s" book.title descriptionSoFar
+    let fChocolate descriptionSoFar (choc:Chocolate) =
+        sprintf "%A chocolate %s" choc.chocType descriptionSoFar
+    let fWrapped descriptionSoFar style =
+        sprintf "%s wrapped in %A paper" descriptionSoFar style
+    let fBox descriptionSoFar =
+        sprintf "%s in a box" descriptionSoFar
+    let fCard descriptionSoFar message =
+        sprintf "%s with a card saying '%s'" descriptionSoFar message
+
+    let initialAcc = ""
+
+    foldGift fBook fChocolate fWrapped fBox fCard initialAcc gift
+
+let descriptionUsingFoldWithGenerator gift =
+    
+    let fBook descriptionGenerator (book:Book) =
+        descriptionGenerator (sprintf "'%s'" book.title)
+
+    let fChocolate descriptionGenerator (choc:Chocolate) =
+        descriptionGenerator (sprintf "%A chocolate" choc.chocType)
+
+    let fWrapped descriptionGenerator style =
+        fun innerText ->
+            let newInnerText = sprintf "%s wrapped in %A paper" innerText style
+            descriptionGenerator newInnerText
+
+    let fBox descriptionGenerator =
+        fun innerText ->
+            let newInnerText = sprintf "%s in a box" innerText
+            descriptionGenerator newInnerText
+
+    let fCard descriptionGenerator message =
+        fun innerText ->
+            let newInnerText = sprintf "%s with a card saying '%s'" innerText message
+            descriptionGenerator newInnerText
+
+    let initialAcc = fun innerText -> innerText
+
+    foldGift fBook fChocolate fWrapped fBox fCard initialAcc gift
+
+let rec foldbackGift fBook fChocolate fWrapped fBox fCard gift generator : 'r =
+    let recurse = foldbackGift fBook fChocolate fWrapped fBox fCard
+    match gift with
+    | Book book ->
+        generator (fBook book)
+    | Chocolate choc ->
+        generator (fChocolate choc)
+    | Wrapped (innerGift, style) ->
+        let newGenerator innerVal =
+            let newInnerVal = fWrapped innerVal style
+            generator newInnerVal
+        recurse innerGift newGenerator
+    | Boxed innerGift ->
+        let newGenerator innerVal =
+            let newInnerVal = fBox innerVal
+            generator newInnerVal
+        recurse innerGift newGenerator
+    | WithACard (innerGift, message) ->
+        let newGenerator innerVal =
+            let newInnerVal = fCard innerVal message
+            generator newInnerVal
+        recurse innerGift newGenerator
+
+let descriptionUsingFoldBack gift = 
+    let fBook (book:Book) =
+        sprintf "'%s'" book.title
+    let fChocolate (choc:Chocolate) =
+        sprintf "%A chocolate" choc.chocType
+    let fWrapped innerText style =
+        sprintf "%s wrapped in %A paper" innerText style
+    let fBox innerText =
+        sprintf "%s in a box" innerText
+    let fCard innerText message =
+        sprintf "%s with a card saying '%s'" innerText message
+    let initialAcc = fun innerText -> innerText
+    foldbackGift fBook fChocolate fWrapped fBox fCard gift initialAcc
+
+birthdayPresent |> descriptionUsingFold
+birthdayPresent |> descriptionUsingFoldWithGenerator
+birthdayPresent |> descriptionUsingFoldBack
+christmasPresent |> descriptionUsingFold
+christmasPresent |> descriptionUsingFoldWithGenerator
+christmasPresent |> descriptionUsingFoldBack
