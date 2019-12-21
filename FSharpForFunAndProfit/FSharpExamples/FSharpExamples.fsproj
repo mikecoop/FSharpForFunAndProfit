@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="MapBindApply\MapBindApply1.fsx" />
+    <None Include="ParserCombinators\BasicParserLibrary.fsx" />
+    <None Include="ParserCombinators\BasicParsers.fsx" />
+    <None Include="ParserCombinators\JsonParser.fsx" />
+    <None Include="ParserCombinators\ParserLibrary.fsx" />
+    <None Include="ParserCombinators\Scratchpad1.fsx" />
+    <None Include="ParserCombinators\Scratchpad2.fsx" />
+    <None Include="ParserCombinators\Scratchpad3.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes1.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes2.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes3.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes4.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes5-1.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes5-2.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes5-3.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-1.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-2.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-3.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-4.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-5.fsx" />
+    <None Include="RecursiveTypes\RecursiveTypes6-6.fsx" />
+    <None Include="WhyUseFSharp\ActivePatterns.fsx" />
+    <None Include="WhyUseFSharp\AnythingCSharpCanDo.fsx" />
+    <None Include="WhyUseFSharp\AsynchronousProgramming.fsx" />
+    <None Include="WhyUseFSharp\DesigningForCorrectness.fsx" />
+    <None Include="WhyUseFSharp\DotNetInterop.fsx" />
+    <None Include="WhyUseFSharp\ExhaustivePatternMatching.fsx" />
+    <None Include="WhyUseFSharp\FunctionalReactiveProgramming.fsx" />
+    <None Include="WhyUseFSharp\Functions.fsx" />
+    <None Include="WhyUseFSharp\FunctionsAsInterfaces.fsx" />
+    <None Include="WhyUseFSharp\MessagesAndAgents.fsx" />
+    <None Include="WhyUseFSharp\MiniLanguages.fsx" />
+    <None Include="WhyUseFSharp\PartialApplication.fsx" />
+    <None Include="WhyUseFSharp\PatternMatching.fsx" />
+    <None Include="WhyUseFSharp\Scratchpad.fsx" />
+    <None Include="WhyUseFSharp\TypeChecking.fsx" />
+    <None Include="WhyUseFSharp\Types.fsx" />
+  </ItemGroup>
+
+</Project>
